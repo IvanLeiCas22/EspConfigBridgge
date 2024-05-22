@@ -100,7 +100,7 @@ private:
        GETSWITCHES=0x12,
        LAST_ADC=0xA0,
        SETMOTORTEST=0xA1,
-       SETSERVOANGLE=0xA2,
+       MPU=0xA2,
        SERVOMOVESTOP=0x0A,
        GETDISTANCE=0xA3,
        GETSPEED=0xA4,
@@ -196,6 +196,10 @@ private:
 
     /******TCRT5000******/
     uint16_t irSensorsMeasure[8];
+
+    /******MPU******/
+    uint16_t Gyro[3];
+    uint16_t Accel[3];
 
     /*TIMER*/
     QTimer *QTimer1;

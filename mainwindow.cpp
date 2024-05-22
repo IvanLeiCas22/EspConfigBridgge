@@ -44,8 +44,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboBoxCom->addItem("MOTOR POWER", 0xA1);
     ui->comboBoxCom->addItem("SPEED", 0xA4);
 
-    //C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg
-    QPixmap bkgnd("C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg");
+    //C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg
+
+    QPixmap bkgnd("C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Window, bkgnd);
@@ -382,15 +383,21 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             if (datosRx[4] == ACK)
                 ui->txtBrowserCMD->append("POWER HAS BEEN SET");
             break;
-        case SETSERVOANGLE://     SERVOANGLE=0xA2,
-            if (datosRx[4] == ACK) {
-                ui->txtBrowserCMD->append("MOVING SERVO");
-                servoIsMoving = true;
+        case MPU://     SERVOANGLE=0xA2,
+            for (uint8_t i=0; i<6; i+=2) {
+                myWorker.u8[0] = datosRx[i+2];
+                myWorker.u8[1] = datosRx[i+3];
+                Gyro[i/2] = myWorker.u16[0];
             }
-            if (datosRx[4] == SERVOMOVESTOP) {
-                ui->txtBrowserCMD->append("SERVO MOVED");
-                servoIsMoving = false;
+            for (uint8_t i=0; i<6; i+=2) {
+                myWorker.u8[0] = datosRx[i+2];
+                myWorker.u8[1] = datosRx[i+3];
+                Accel[i/2] = myWorker.u16[0];
             }
+
+            ui->txtBrowserCMD->append(QString("--> Gyro X= %1").arg(Gyro[0]));
+            ui->txtBrowserCMD->append(QString("--> Gyro Y= %1").arg(Gyro[1]));
+            ui->txtBrowserCMD->append(QString("--> Gyro Z= %1").arg(Gyro[2]));
             break;
         case GETSERVOANGLE://    GETSERVOANGLE=0xA8,
             servoAngleToShow = datosRx[4];
@@ -570,17 +577,17 @@ void MainWindow::sendDataSerial()
             dato[indice++] = w.u8[3];
             dato[NBYTES]= 0x0C;
             break;
-        case SETSERVOANGLE://SERVOANGLE=0xA2,
-            dato[indice++] = SETSERVOANGLE;
-            if (isASelectedCmd) {
-                w.i32 = servoAngle;
-            } else {
-                w.i32 = QInputDialog::getInt(this, "SERVO", "Angulo:", 0, 0, 180, 1, &ok);
-                if(!ok)
-                    break;
-            }
-            dato[indice++] = w.i8[0];
-            dato[NBYTES]= 0x05;
+        case MPU://SERVOANGLE=0xA2,
+//            dato[indice++] = MPU;
+//            if (isASelectedCmd) {
+//                w.i32 = servoAngle;
+//            } else {
+//                w.i32 = QInputDialog::getInt(this, "SERVO", "Angulo:", 0, 0, 180, 1, &ok);
+//                if(!ok)
+//                    break;
+//            }
+//            dato[indice++] = w.i8[0];
+//            dato[NBYTES]= 0x05;
             break;
         case GETALIVE:
         case GETDISTANCE://GETDISTANCE=0xA3
@@ -761,8 +768,8 @@ void MainWindow::sendDataUDP()
             dato[indice++] = w.u8[3];
             dato[NBYTES]= 0x0C;
             break;
-        case SETSERVOANGLE://SERVOANGLE=0xA2,
-            dato[indice++] = SETSERVOANGLE;
+        case MPU://SERVOANGLE=0xA2,
+            dato[indice++] = MPU;
             if (isASelectedCmd) {
                 w.i32 = servoAngle;
             } else {
@@ -1055,7 +1062,7 @@ void MainWindow::reiniciarUI()
 void MainWindow::on_radarButton_clicked()
 {
     if (radarDrawing) {
-        auxComand = SETSERVOANGLE;
+        auxComand = MPU;
         servoAngle = 90;
         isASelectedCmd = true;
         sendDataSerial();
@@ -1110,7 +1117,7 @@ void MainWindow::RadarRun()
     switch (radarStatus)
     {
         case MOVIENDO_SERVO:
-            auxComand = SETSERVOANGLE;
+            auxComand = MPU;
             isASelectedCmd = true;
             sendDataSerial();
             isASelectedCmd = true;
@@ -1141,7 +1148,7 @@ void MainWindow::RadarRun()
             }
         break;
         case FINALIZANDO:
-            auxComand = SETSERVOANGLE;
+            auxComand = MPU;
             servoAngle = 90;
             isASelectedCmd = true;
             sendDataSerial();

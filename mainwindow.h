@@ -198,8 +198,8 @@ private:
     uint16_t irSensorsMeasure[8];
 
     /******MPU******/
-    uint16_t Gyro[3];
-    uint16_t Accel[3];
+    int16_t Gyro[3];
+    int16_t Accel[3];
 
     /*TIMER*/
     QTimer *QTimer1;

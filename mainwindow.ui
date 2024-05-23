@@ -2230,6 +2230,66 @@ border-radius: 2px;</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QLCDNumber" name="gyro_0">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>540</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="gyro_1">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>540</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="gyro_2">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>540</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="accel_0">
+    <property name="geometry">
+     <rect>
+      <x>780</x>
+      <y>540</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="accel_1">
+    <property name="geometry">
+     <rect>
+      <x>880</x>
+      <y>540</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="accel_2">
+    <property name="geometry">
+     <rect>
+      <x>980</x>
+      <y>540</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -2237,7 +2297,7 @@ border-radius: 2px;</string>
      <x>0</x>
      <y>0</y>
      <width>1296</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConfiguraciones">

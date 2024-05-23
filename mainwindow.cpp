@@ -45,8 +45,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboBoxCom->addItem("SPEED", 0xA4);
 
     //C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg
+    //C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg
 
-    QPixmap bkgnd("C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg");
+    QPixmap bkgnd("C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Window, bkgnd);
@@ -349,6 +350,7 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
     uint8_t i=0;
     QString str, str2;
     _work myWorker;
+    myWorker.u32 = 0;
 
     for(int i = 1; i<length; i++){
         if(isalnum(datosRx[i]))
@@ -387,17 +389,29 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             for (uint8_t i=0; i<6; i+=2) {
                 myWorker.u8[0] = datosRx[i+2];
                 myWorker.u8[1] = datosRx[i+3];
-                Gyro[i/2] = myWorker.u16[0];
+                Accel[i/2] = myWorker.i16[0];
             }
-            for (uint8_t i=0; i<6; i+=2) {
+            for (uint8_t i=6; i<12; i+=2) {
                 myWorker.u8[0] = datosRx[i+2];
                 myWorker.u8[1] = datosRx[i+3];
-                Accel[i/2] = myWorker.u16[0];
+                Gyro[(i-6)/2] = myWorker.i16[0];
             }
 
             ui->txtBrowserCMD->append(QString("--> Gyro X= %1").arg(Gyro[0]));
             ui->txtBrowserCMD->append(QString("--> Gyro Y= %1").arg(Gyro[1]));
             ui->txtBrowserCMD->append(QString("--> Gyro Z= %1").arg(Gyro[2]));
+
+            ui->gyro_0->display(QString("%1").arg(Gyro[0]));
+            ui->gyro_1->display(QString("%1").arg(Gyro[1]));
+            ui->gyro_2->display(QString("%1").arg(Gyro[2]));
+
+            ui->txtBrowserCMD->append(QString("--> Accel X= %1").arg(Accel[0]));
+            ui->txtBrowserCMD->append(QString("--> Accel Y= %1").arg(Accel[1]));
+            ui->txtBrowserCMD->append(QString("--> Accel Z= %1").arg(Accel[2]));
+
+            ui->accel_0->display(QString("%1").arg(Accel[0]));
+            ui->accel_1->display(QString("%1").arg(Accel[1]));
+            ui->accel_2->display(QString("%1").arg(Accel[2]));
             break;
         case GETSERVOANGLE://    GETSERVOANGLE=0xA8,
             servoAngleToShow = datosRx[4];

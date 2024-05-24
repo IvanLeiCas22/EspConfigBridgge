@@ -8,28 +8,32 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    connect(ui->actionExit,&QAction::triggered,this,&MainWindow::close);
+
     serial = new QSerialPort(this);
     settingPorts = new SettingsDialog(this);
-    estadoSerial = new QLabel(this);
-    estadoSerial->setText("Desconectado ......");
-    ui->statusbar->addWidget(estadoSerial);
-    ui->actionDisconnect->setEnabled(false);
-    UdpSocket1 = new QUdpSocket(this);
-    ui->pushButtonSend_2->setEnabled(false);
-    estadoProtocoloUdp = START;
-    estadoProtocolo = START;
-    QTimer1 = new QTimer(this);
-    QPaintBox1 = new QPaintBox(0, 0, ui->widgetRadar);
-
     connect(ui->pushButtonSend,&QPushButton::clicked,this,&MainWindow::sendDataSerial);
-    connect(ui->pushButtonSend_2,&QPushButton::clicked,this,&MainWindow::sendDataUDP);
     connect(serial,&QSerialPort::readyRead,this,&MainWindow::dataRecived);
     connect(ui->actionScanPorts,&QAction::triggered,settingPorts,&SettingsDialog::show);
     connect(ui->actionConnect_Device, &QAction::triggered,this,&MainWindow::openSerialPorts);
     connect(ui->actionDisconnect,&QAction::triggered,this,&MainWindow::closeSerialPorts);
-    connect(ui->actionExit,&QAction::triggered,this,&MainWindow::close);
+    estadoProtocolo = START;
+
+    UdpSocket1 = new QUdpSocket(this);
+    ui->pushButtonSend_2->setEnabled(false);
+    connect(ui->pushButtonSend_2,&QPushButton::clicked,this,&MainWindow::sendDataUDP);
     connect(UdpSocket1,&QUdpSocket::readyRead,this,&MainWindow::OnUdpRxData);
+    estadoProtocoloUdp = START;
+
+    estadoSerial = new QLabel(this);
+    estadoSerial->setText("Desconectado ......");
+    ui->statusbar->addWidget(estadoSerial);
+    ui->actionDisconnect->setEnabled(false);
+
+    QTimer1 = new QTimer(this);
     connect(QTimer1, &QTimer::timeout, this, &MainWindow::OnQTimer1);
+
+    QPaintBox1 = new QPaintBox(0, 0, ui->widgetRadar);
 
     ui->comboBoxCom->addItem("ALIVE", 0xF0);
     ui->comboBoxCom->addItem("FIRMWARE", 0xF1);
@@ -47,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     //C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg
     //C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg
 
-    QPixmap bkgnd("C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg");
+    QPixmap bkgnd("C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Window, bkgnd);
@@ -57,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-    //delete QPaintBox1;
+    delete QPaintBox1;
 }
 
 void MainWindow::openSerialPorts()
@@ -150,6 +154,7 @@ void MainWindow::on_pushButtonUdpOpen_clicked()
     }
     ui->pushButtonUdpOpen->setText("CLOSE");
     ui->pushButtonSend_2->setEnabled(true);
+    ui->pushButtonSend->setEnabled(false);
     if (UdpSocket1->isOpen()){
         if(clientAddress.isNull())
             clientAddress.setAddress(ui->lineEditIP->text());
@@ -382,8 +387,8 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             ui->ir_7->display(QString("%1").arg(irSensorsMeasure[7], 2, 10, QChar('0')));
             break;
         case SETMOTORTEST://     MOTORTEST=0xA1,
-            if (datosRx[4] == ACK)
-                ui->txtBrowserCMD->append("POWER HAS BEEN SET");
+//            if (datosRx[4] == ACK)
+//                ui->txtBrowserCMD->append("POWER HAS BEEN SET");
             break;
         case MPU://     SERVOANGLE=0xA2,
             for (uint8_t i=0; i<6; i+=2) {
@@ -391,10 +396,10 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
                 myWorker.u8[1] = datosRx[i+3];
                 Accel[i/2] = myWorker.i16[0];
             }
-            for (uint8_t i=6; i<12; i+=2) {
+            for (uint8_t i=8; i<14; i+=2) {
                 myWorker.u8[0] = datosRx[i+2];
                 myWorker.u8[1] = datosRx[i+3];
-                Gyro[(i-6)/2] = myWorker.i16[0];
+                Gyro[(i-8)/2] = myWorker.i16[0];
             }
 
             ui->txtBrowserCMD->append(QString("--> Gyro X= %1").arg(Gyro[0]));
@@ -413,20 +418,20 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             ui->accel_1->display(QString("%1").arg(Accel[1]));
             ui->accel_2->display(QString("%1").arg(Accel[2]));
             break;
-        case GETSERVOANGLE://    GETSERVOANGLE=0xA8,
-            servoAngleToShow = datosRx[4];
-            ui->angleLCD->display(QString("%1").arg(servoAngleToShow, 2, 10, QChar('0')));
-            break;
-        case GETDISTANCE://     GETDISTANCE=0xA3,
-            for (uint8_t apendice = 0; apendice < 4; apendice++) {
-                myWorker.u8[apendice] = datosRx[apendice+4];
-            }
-            distancia = floor((myWorker.u32/58)+0.5);
+//        case GETSERVOANGLE://    GETSERVOANGLE=0xA8,
+//            servoAngleToShow = datosRx[4];
+//            ui->angleLCD->display(QString("%1").arg(servoAngleToShow, 2, 10, QChar('0')));
+//            break;
+//        case GETDISTANCE://     GETDISTANCE=0xA3,
+//            for (uint8_t apendice = 0; apendice < 4; apendice++) {
+//                myWorker.u8[apendice] = datosRx[apendice+4];
+//            }
+//            distancia = floor((myWorker.u32/58)+0.5);
 
-            ui->txtBrowserCMD->append(QString("--> Distancia = %1").arg(distancia, 0, 10, QChar('0')).toUpper());
+//            ui->txtBrowserCMD->append(QString("--> Distancia = %1").arg(distancia, 0, 10, QChar('0')).toUpper());
 
-            ui->distanceLCD->display(QString("%1").arg(distancia, 2, 10, QChar('0')));
-            break;
+//            ui->distanceLCD->display(QString("%1").arg(distancia, 2, 10, QChar('0')));
+//            break;
         case GETSPEED://     GETSPEED=0xA4,
             for (uint8_t i=0; i<4; i++) {
                 myWorker.u8[i] = datosRx[i+4];
@@ -481,9 +486,9 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             }
             ui->FirmwareLabel->setText(firmwareCadena);
             break;
-        case SETLEDS:
+//        case SETLEDS:
 
-            break;
+//            break;
         case STARTCONFIG:
             if(datosRx[4]==ACK){
                 if(source)
@@ -495,54 +500,54 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             }
             ui->txtBrowserCMD->append(str);
             break;
-        case SETSERVOLIMITS:
-            myWorker.u8[0] = datosRx[4];
-            myWorker.u8[1] = datosRx[5];
-            servoConfig.maxMsServo = myWorker.u16[0];
-            myWorker.u8[0] = datosRx[6];
-            myWorker.u8[1] = datosRx[7];
-            servoConfig.minMsServo = myWorker.u16[0];
+//        case SETSERVOLIMITS:
+//            myWorker.u8[0] = datosRx[4];
+//            myWorker.u8[1] = datosRx[5];
+//            servoConfig.maxMsServo = myWorker.u16[0];
+//            myWorker.u8[0] = datosRx[6];
+//            myWorker.u8[1] = datosRx[7];
+//            servoConfig.minMsServo = myWorker.u16[0];
 
-            ui->txtBrowserCMD->append(QString("max: %1").arg(servoConfig.maxMsServo, 0, 10, QChar('0')));
-            ui->txtBrowserCMD->append(QString("min: %1").arg(servoConfig.minMsServo, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("max: %1").arg(servoConfig.maxMsServo, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("min: %1").arg(servoConfig.minMsServo, 0, 10, QChar('0')));
 
-            ui->ServoMaxValueLCD->display(QString("%1").arg(servoConfig.maxMsServo, 0, 10, QChar('0')));
-            ui->ServoMinValueLCD->display(QString("%1").arg(servoConfig.minMsServo, 0, 10, QChar('0')));
-            break;
-        case SETBLACKCOLORDETECTED:
-            myWorker.u8[0] = datosRx[4];
-            myWorker.u8[1] = datosRx[5];
-            irConfig.blackLeft = myWorker.u16[0];
-            myWorker.u8[0] = datosRx[6];
-            myWorker.u8[1] = datosRx[7];
-            irConfig.blackCenter = myWorker.u16[0];
-            myWorker.u8[0] = datosRx[8];
-            myWorker.u8[1] = datosRx[9];
-            irConfig.blackRight = myWorker.u16[0];
+//            ui->ServoMaxValueLCD->display(QString("%1").arg(servoConfig.maxMsServo, 0, 10, QChar('0')));
+//            ui->ServoMinValueLCD->display(QString("%1").arg(servoConfig.minMsServo, 0, 10, QChar('0')));
+//            break;
+//        case SETBLACKCOLORDETECTED:
+//            myWorker.u8[0] = datosRx[4];
+//            myWorker.u8[1] = datosRx[5];
+//            irConfig.blackLeft = myWorker.u16[0];
+//            myWorker.u8[0] = datosRx[6];
+//            myWorker.u8[1] = datosRx[7];
+//            irConfig.blackCenter = myWorker.u16[0];
+//            myWorker.u8[0] = datosRx[8];
+//            myWorker.u8[1] = datosRx[9];
+//            irConfig.blackRight = myWorker.u16[0];
 
-            ui->txtBrowserCMD->append(QString("leftBlack: %1").arg(irConfig.blackLeft, 0, 10, QChar('0')));
-            ui->txtBrowserCMD->append(QString("centerBlack: %1").arg(irConfig.blackCenter, 0, 10, QChar('0')));
-            ui->txtBrowserCMD->append(QString("rightBlack: %1").arg(irConfig.blackRight, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("leftBlack: %1").arg(irConfig.blackLeft, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("centerBlack: %1").arg(irConfig.blackCenter, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("rightBlack: %1").arg(irConfig.blackRight, 0, 10, QChar('0')));
 
-            ui->NegroConfigLCD->display(QString("%1").arg(irConfig.blackLeft, 0, 10, QChar('0')));
-            break;
-        case SETWHITECOLORDETECTED:
-            myWorker.u8[0] = datosRx[4];
-            myWorker.u8[1] = datosRx[5];
-            irConfig.whiteLeft = myWorker.u16[0];
-            myWorker.u8[0] = datosRx[6];
-            myWorker.u8[1] = datosRx[7];
-            irConfig.whiteCenter = myWorker.u16[0];
-            myWorker.u8[0] = datosRx[8];
-            myWorker.u8[1] = datosRx[9];
-            irConfig.whiteRight = myWorker.u16[0];
+//            ui->NegroConfigLCD->display(QString("%1").arg(irConfig.blackLeft, 0, 10, QChar('0')));
+//            break;
+//        case SETWHITECOLORDETECTED:
+//            myWorker.u8[0] = datosRx[4];
+//            myWorker.u8[1] = datosRx[5];
+//            irConfig.whiteLeft = myWorker.u16[0];
+//            myWorker.u8[0] = datosRx[6];
+//            myWorker.u8[1] = datosRx[7];
+//            irConfig.whiteCenter = myWorker.u16[0];
+//            myWorker.u8[0] = datosRx[8];
+//            myWorker.u8[1] = datosRx[9];
+//            irConfig.whiteRight = myWorker.u16[0];
 
-            ui->txtBrowserCMD->append(QString("leftWhite: %1").arg(irConfig.whiteLeft, 0, 10, QChar('0')));
-            ui->txtBrowserCMD->append(QString("centerWhite: %1").arg(irConfig.whiteCenter, 0, 10, QChar('0')));
-            ui->txtBrowserCMD->append(QString("rightWhite: %1").arg(irConfig.whiteRight, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("leftWhite: %1").arg(irConfig.whiteLeft, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("centerWhite: %1").arg(irConfig.whiteCenter, 0, 10, QChar('0')));
+//            ui->txtBrowserCMD->append(QString("rightWhite: %1").arg(irConfig.whiteRight, 0, 10, QChar('0')));
 
-            ui->BlancoConfigLCD->display(QString("%1").arg(irConfig.whiteLeft, 0, 10, QChar('0')));
-            break;
+//            ui->BlancoConfigLCD->display(QString("%1").arg(irConfig.whiteLeft, 0, 10, QChar('0')));
+//            break;
         default:
             str = str + "Comando DESCONOCIDO!!!!";
             ui->txtBrowserCMD->append(str);
@@ -604,112 +609,112 @@ void MainWindow::sendDataSerial()
 //            dato[NBYTES]= 0x05;
             break;
         case GETALIVE:
-        case GETDISTANCE://GETDISTANCE=0xA3
+        //case GETDISTANCE://GETDISTANCE=0xA3
         case GETSPEED://GETSPEED=0xA4
         case GETSWITCHES://GETSWITCHES=0xA5
         case GETFIRMWARE:// GETFIRMWARE=0xF1
         case LAST_ADC://ANALOGSENSORS=0xA0
-        case GETSERVOANGLE://GETSERVOANGLE=0xA8
+        //case GETSERVOANGLE://GETSERVOANGLE=0xA8
         case SETLEDS:
             dato[indice++] = cmdId;
             dato[NBYTES] = 0x02;
             break;
-        case SETSERVOLIMITS:
-            dato[indice++] = cmdId;
-            if (!isASelectedCmd) {
-                servoConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
-                if (!ok)
-                    break;
-            }
-            dato[indice++] = servoConfig.modo;
-            if (servoConfig.modo) {
-                servoConfig.maxMsServo = QInputDialog::getInt(this, "MAX MS", "Elegir ms maximos del servo", 2000, 2000, 2450, 1, &ok);
-                if (ok) {
-                    w.u16[0] = servoConfig.maxMsServo;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                servoConfig.minMsServo = QInputDialog::getInt(this, "MIN MS", "Elegir ms minimos del servo", 1000, 480, 1000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = servoConfig.minMsServo;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                dato[NBYTES] = 0x09;
-            }
-            else
-                dato[NBYTES] = 0x05;
-            break;
-        case SETBLACKCOLORDETECTED:
-            dato[indice++] = cmdId;
-            if (!isASelectedCmd) {
-                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
-                if (!ok)
-                    break;
-            }
-            dato[indice++] = irConfig.modo;
-            if (irConfig.modo) {
-                irConfig.blackLeft = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro izquierdo:", 6000, 2000, 60000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.blackLeft;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.blackCenter = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro centro:", 6000, 2000, 60000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.blackCenter;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.blackRight = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro derecho:", 6000, 2000, 60000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.blackRight;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                dato[NBYTES] = 0x0B;
-            } else
-                dato[NBYTES] = 0x05;
-            break;
-        case SETWHITECOLORDETECTED:
-            dato[indice++] = cmdId;
-            if (!isASelectedCmd) {
-                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
-                if (!ok)
-                    break;
-            }
-            dato[indice++] = irConfig.modo;
-            if (irConfig.modo) {
-                irConfig.whiteLeft = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco izquierdo:", 3500, 1000, 20000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.whiteLeft;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.whiteCenter = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco centro:", 3500, 1000, 20000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.whiteCenter;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.whiteRight = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco derecho:", 3500, 1000, 20000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.whiteRight;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                dato[NBYTES] = 0x0B;
-            } else
-                dato[NBYTES] = 0x05;
-            break;
+//        case SETSERVOLIMITS:
+//            dato[indice++] = cmdId;
+//            if (!isASelectedCmd) {
+//                servoConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
+//                if (!ok)
+//                    break;
+//            }
+//            dato[indice++] = servoConfig.modo;
+//            if (servoConfig.modo) {
+//                servoConfig.maxMsServo = QInputDialog::getInt(this, "MAX MS", "Elegir ms maximos del servo", 2000, 2000, 2450, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = servoConfig.maxMsServo;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                servoConfig.minMsServo = QInputDialog::getInt(this, "MIN MS", "Elegir ms minimos del servo", 1000, 480, 1000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = servoConfig.minMsServo;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                dato[NBYTES] = 0x09;
+//            }
+//            else
+//                dato[NBYTES] = 0x05;
+//            break;
+//        case SETBLACKCOLORDETECTED:
+//            dato[indice++] = cmdId;
+//            if (!isASelectedCmd) {
+//                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
+//                if (!ok)
+//                    break;
+//            }
+//            dato[indice++] = irConfig.modo;
+//            if (irConfig.modo) {
+//                irConfig.blackLeft = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro izquierdo:", 6000, 2000, 60000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.blackLeft;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.blackCenter = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro centro:", 6000, 2000, 60000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.blackCenter;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.blackRight = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro derecho:", 6000, 2000, 60000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.blackRight;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                dato[NBYTES] = 0x0B;
+//            } else
+//                dato[NBYTES] = 0x05;
+//            break;
+//        case SETWHITECOLORDETECTED:
+//            dato[indice++] = cmdId;
+//            if (!isASelectedCmd) {
+//                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
+//                if (!ok)
+//                    break;
+//            }
+//            dato[indice++] = irConfig.modo;
+//            if (irConfig.modo) {
+//                irConfig.whiteLeft = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco izquierdo:", 3500, 1000, 20000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.whiteLeft;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.whiteCenter = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco centro:", 3500, 1000, 20000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.whiteCenter;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.whiteRight = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco derecho:", 3500, 1000, 20000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.whiteRight;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                dato[NBYTES] = 0x0B;
+//            } else
+//                dato[NBYTES] = 0x05;
+//            break;
         default:
             return;
     }
@@ -795,112 +800,112 @@ void MainWindow::sendDataUDP()
             dato[NBYTES]= 0x05;
             break;
         case GETALIVE:
-        case GETDISTANCE://GETDISTANCE=0xA3,
+        //case GETDISTANCE://GETDISTANCE=0xA3,
         case GETSPEED://GETSPEED=0xA4,
         case GETSWITCHES://GETSWITCHES=0xA5
         case GETFIRMWARE:// GETFIRMWARE=0xF1
         case LAST_ADC://ANALOGSENSORS=0xA0,
-        case GETSERVOANGLE://GETSERVOANGLE=0xA8
+        //case GETSERVOANGLE://GETSERVOANGLE=0xA8
         case SETLEDS:
             dato[indice++] = cmdId;
             dato[NBYTES] = 0x02;
             break;
-        case SETSERVOLIMITS:
-            dato[indice++] = cmdId;
-            if (!isASelectedCmd) {
-                servoConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
-                if (!ok)
-                    break;
-            }
-            dato[indice++] = servoConfig.modo;
-            if (servoConfig.modo) {
-                servoConfig.maxMsServo = QInputDialog::getInt(this, "MAX MS", "Elegir ms maximos del servo", 2000, 2000, 2450, 1, &ok);
-                if (ok) {
-                    w.u16[0] = servoConfig.maxMsServo;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                servoConfig.minMsServo = QInputDialog::getInt(this, "MIN MS", "Elegir ms minimos del servo", 1000, 480, 1000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = servoConfig.minMsServo;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                dato[NBYTES] = 0x09;
-            }
-            else
-                dato[NBYTES] = 0x05;
-            break;
-        case SETBLACKCOLORDETECTED:
-            dato[indice++] = cmdId;
-            if (!isASelectedCmd) {
-                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
-                if (!ok)
-                    break;
-            }
-            dato[indice++] = irConfig.modo;
-            if (irConfig.modo) {
-                irConfig.blackLeft = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro izquierdo:", 6000, 2000, 60000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.blackLeft;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.blackCenter = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro centro:", 6000, 2000, 60000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.blackCenter;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.blackRight = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro derecho:", 6000, 2000, 60000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.blackRight;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                dato[NBYTES] = 0x0B;
-            } else
-                dato[NBYTES] = 0x05;
-            break;
-        case SETWHITECOLORDETECTED:
-            dato[indice++] = cmdId;
-            if (!isASelectedCmd) {
-                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
-                if (!ok)
-                    break;
-            }
-            dato[indice++] = irConfig.modo;
-            if (irConfig.modo) {
-                irConfig.whiteLeft = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco izquierdo:", 3500, 1000, 20000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.whiteLeft;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.whiteCenter = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco centro:", 3500, 1000, 20000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.whiteCenter;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                irConfig.whiteRight = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco derecho:", 3500, 1000, 20000, 1, &ok);
-                if (ok) {
-                    w.u16[0] = irConfig.whiteRight;
-                    dato[indice++] = w.u8[0];
-                    dato[indice++] = w.u8[1];
-                } else
-                    return;
-                dato[NBYTES] = 0x0B;
-            } else
-                dato[NBYTES] = 0x05;
-            break;
+//        case SETSERVOLIMITS:
+//            dato[indice++] = cmdId;
+//            if (!isASelectedCmd) {
+//                servoConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
+//                if (!ok)
+//                    break;
+//            }
+//            dato[indice++] = servoConfig.modo;
+//            if (servoConfig.modo) {
+//                servoConfig.maxMsServo = QInputDialog::getInt(this, "MAX MS", "Elegir ms maximos del servo", 2000, 2000, 2450, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = servoConfig.maxMsServo;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                servoConfig.minMsServo = QInputDialog::getInt(this, "MIN MS", "Elegir ms minimos del servo", 1000, 480, 1000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = servoConfig.minMsServo;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                dato[NBYTES] = 0x09;
+//            }
+//            else
+//                dato[NBYTES] = 0x05;
+//            break;
+//        case SETBLACKCOLORDETECTED:
+//            dato[indice++] = cmdId;
+//            if (!isASelectedCmd) {
+//                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
+//                if (!ok)
+//                    break;
+//            }
+//            dato[indice++] = irConfig.modo;
+//            if (irConfig.modo) {
+//                irConfig.blackLeft = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro izquierdo:", 6000, 2000, 60000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.blackLeft;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.blackCenter = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro centro:", 6000, 2000, 60000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.blackCenter;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.blackRight = QInputDialog::getInt(this, "BLACK COLOR", "Deteccion negro derecho:", 6000, 2000, 60000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.blackRight;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                dato[NBYTES] = 0x0B;
+//            } else
+//                dato[NBYTES] = 0x05;
+//            break;
+//        case SETWHITECOLORDETECTED:
+//            dato[indice++] = cmdId;
+//            if (!isASelectedCmd) {
+//                irConfig.modo = QInputDialog::getInt(this, "ELEGIR MODO", " 0->LEER   1->CONFIGURAR ", 0, 0, 1, 1, &ok);
+//                if (!ok)
+//                    break;
+//            }
+//            dato[indice++] = irConfig.modo;
+//            if (irConfig.modo) {
+//                irConfig.whiteLeft = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco izquierdo:", 3500, 1000, 20000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.whiteLeft;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.whiteCenter = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco centro:", 3500, 1000, 20000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.whiteCenter;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                irConfig.whiteRight = QInputDialog::getInt(this, "WHITE COLOR", "Deteccion blanco derecho:", 3500, 1000, 20000, 1, &ok);
+//                if (ok) {
+//                    w.u16[0] = irConfig.whiteRight;
+//                    dato[indice++] = w.u8[0];
+//                    dato[indice++] = w.u8[1];
+//                } else
+//                    return;
+//                dato[NBYTES] = 0x0B;
+//            } else
+//                dato[NBYTES] = 0x05;
+//            break;
         default:
             return;
     }
@@ -957,8 +962,8 @@ void MainWindow::OnQTimer1()
     } else
         aliveTimeOut++;
 
-    if (radarDrawing)
-            RadarRun();
+//    if (radarDrawing)
+//            RadarRun();
 }
 
 void MainWindow::inicializaciones()
@@ -978,17 +983,17 @@ void MainWindow::inicializaciones()
 
 void MainWindow::lecturaSensores()
 {
-    auxComand = GETDISTANCE;
-    isASelectedCmd = true;
-    sendDataSerial();
-    isASelectedCmd = true;
-    sendDataUDP();
+//    auxComand = GETDISTANCE;
+//    isASelectedCmd = true;
+//    sendDataSerial();
+//    isASelectedCmd = true;
+//    sendDataUDP();
 
-    auxComand = GETSERVOANGLE;
-    isASelectedCmd = true;
-    sendDataSerial();
-    isASelectedCmd = true;
-    sendDataUDP();
+//    auxComand = GETSERVOANGLE;
+//    isASelectedCmd = true;
+//    sendDataSerial();
+//    isASelectedCmd = true;
+//    sendDataUDP();
 
     auxComand = LAST_ADC;
     isASelectedCmd = true;
@@ -1019,26 +1024,26 @@ void MainWindow::lecturaSensores()
 
         ui->FirmwareLabel->setText("20221211-v1.0");
 
-        auxComand = SETSERVOLIMITS;
-        servoConfig.modo = 0;
-        isASelectedCmd = true;
-        sendDataUDP();
-        isASelectedCmd = true;
-        sendDataSerial();
+//        auxComand = SETSERVOLIMITS;
+//        servoConfig.modo = 0;
+//        isASelectedCmd = true;
+//        sendDataUDP();
+//        isASelectedCmd = true;
+//        sendDataSerial();
 
-        auxComand = SETBLACKCOLORDETECTED;
-        irConfig.modo = 0;
-        isASelectedCmd = true;
-        sendDataSerial();
-        isASelectedCmd = true;
-        sendDataUDP();
+//        auxComand = SETBLACKCOLORDETECTED;
+//        irConfig.modo = 0;
+//        isASelectedCmd = true;
+//        sendDataSerial();
+//        isASelectedCmd = true;
+//        sendDataUDP();
 
-        auxComand = SETWHITECOLORDETECTED;
-        irConfig.modo = 0;
-        isASelectedCmd = true;
-        sendDataSerial();
-        isASelectedCmd = true;
-        sendDataUDP();
+//        auxComand = SETWHITECOLORDETECTED;
+//        irConfig.modo = 0;
+//        isASelectedCmd = true;
+//        sendDataSerial();
+//        isASelectedCmd = true;
+//        sendDataUDP();
     }
 
     if (connectionType == 1) {
@@ -1140,7 +1145,7 @@ void MainWindow::RadarRun()
         break;
         case MIDIENDO:
             if (!servoIsMoving) {
-                auxComand = GETDISTANCE;
+                //auxComand = GETDISTANCE;
                 isASelectedCmd = true;
                 sendDataSerial();
                 isASelectedCmd = true;

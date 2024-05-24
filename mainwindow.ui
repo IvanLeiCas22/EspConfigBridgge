@@ -2292,15 +2292,21 @@ border-radius: 2px;</string>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>1296</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConfiguraciones">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>UART</string>
     </property>
@@ -2318,6 +2324,12 @@ border-radius: 2px;</string>
    </property>
   </action>
   <action name="actionConnect_Device">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Connect_Device</string>
    </property>

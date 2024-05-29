@@ -392,13 +392,13 @@ void MainWindow::decodeData(uint8_t *datosRx, uint8_t source)
             break;
         case MPU://     SERVOANGLE=0xA2,
             for (uint8_t i=0; i<6; i+=2) {
-                myWorker.u8[0] = datosRx[i+2];
-                myWorker.u8[1] = datosRx[i+3];
+                myWorker.u8[1] = datosRx[i+2];
+                myWorker.u8[0] = datosRx[i+3];
                 Accel[i/2] = myWorker.i16[0];
             }
             for (uint8_t i=8; i<14; i+=2) {
-                myWorker.u8[0] = datosRx[i+2];
-                myWorker.u8[1] = datosRx[i+3];
+                myWorker.u8[1] = datosRx[i+2];
+                myWorker.u8[0] = datosRx[i+3];
                 Gyro[(i-8)/2] = myWorker.i16[0];
             }
 

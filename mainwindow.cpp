@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     //C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg
     //C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg
 
-    QPixmap bkgnd("C:/Users/ivanl/OneDrive/Documentos/Microcontroladores/DESKTOP_COMPUTER/EspConfigBridgge/EspConfigBridgge/background3.jpg");
+    QPixmap bkgnd("C:/Users/GAMING/Documents/Microcontroladores/Qt_nuevo/EspConfigBridgge/EspConfigBridgge/background3.jpg");
     bkgnd = bkgnd.scaled(this->size(), Qt::IgnoreAspectRatio);
     QPalette palette;
     palette.setBrush(QPalette::Window, bkgnd);

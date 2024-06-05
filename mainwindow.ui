@@ -1857,13 +1857,63 @@ border-radius: 2px;</string>
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="widgetRadar" native="true">
+    <widget class="QLCDNumber" name="gyro_2">
+     <property name="geometry">
+      <rect>
+       <x>520</x>
+       <y>170</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="gyro_0">
+     <property name="geometry">
+      <rect>
+       <x>340</x>
+       <y>170</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="gyro_1">
+     <property name="geometry">
+      <rect>
+       <x>430</x>
+       <y>170</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="accel_2">
+     <property name="geometry">
+      <rect>
+       <x>540</x>
+       <y>220</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="accel_0">
+     <property name="geometry">
+      <rect>
+       <x>340</x>
+       <y>220</y>
+       <width>81</width>
+       <height>41</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLCDNumber" name="accel_1">
      <property name="geometry">
       <rect>
        <x>440</x>
-       <y>190</y>
-       <width>120</width>
-       <height>80</height>
+       <y>220</y>
+       <width>81</width>
+       <height>41</height>
       </rect>
      </property>
     </widget>
@@ -2230,63 +2280,13 @@ border-radius: 2px;</string>
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLCDNumber" name="gyro_0">
+   <widget class="QWidget" name="widgetRadar" native="true">
     <property name="geometry">
      <rect>
-      <x>450</x>
-      <y>540</y>
-      <width>81</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="gyro_1">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>540</y>
-      <width>81</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="gyro_2">
-    <property name="geometry">
-     <rect>
-      <x>630</x>
-      <y>540</y>
-      <width>81</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="accel_0">
-    <property name="geometry">
-     <rect>
-      <x>780</x>
-      <y>540</y>
-      <width>81</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="accel_1">
-    <property name="geometry">
-     <rect>
-      <x>880</x>
-      <y>540</y>
-      <width>81</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="accel_2">
-    <property name="geometry">
-     <rect>
-      <x>980</x>
-      <y>540</y>
-      <width>81</width>
-      <height>41</height>
+      <x>470</x>
+      <y>550</y>
+      <width>128</width>
+      <height>64</height>
      </rect>
     </property>
    </widget>
